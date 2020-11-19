@@ -40,7 +40,7 @@ jobs:
         if: ${{ matrix.config.os == 'ubuntu-18.04' }}
         run: |
           sudo apt-get update
-          sudo apt-get install libcurl4-openssl-dev libglpk40
+          sudo apt-get install libssl-dev libcurl4-openssl-dev libglpk40 libxml2-dev gfortran libgfortran4 libicu60 
           
       - uses: actions/checkout@v1
           
@@ -53,9 +53,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          Rscript -e "install.packages(c('BiocManager', 'remotes', 'stringr', 'knitr', 'rmarkdown', 'devtools', 'RUnit', 'igraph', 'rcmdcheck', 'nsga2R'))"
-          Rscript -e "BiocManager::install(version = 'devel', ask = FALSE, update = FALSE)"
-          Rscript -e "BiocManager::install(c('RCy3', 'BiocStyle', 'BiocParallel'), version = 'devel', ask = FALSE, update = FALSE)"
+          Rscript -e "install.packages(c('BiocManager', 'remotes', 'stringr', 'knitr', 'rmarkdown', 'devtools', 'RUnit', 'igraph', 'rcmdcheck', 'nsga2R', 'stringi', 'lintr'))"
+          Rscript -e "BiocManager::install(version = "3.12", ask = FALSE, update = FALSE)"
+          Rscript -e "BiocManager::install(c('RCy3', 'BiocStyle', 'BiocParallel'), ask = FALSE, update = FALSE)"
 
       - name: Non-windows check
         if: ${{ matrix.config.os != 'windows-latest' }}
