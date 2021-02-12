@@ -48,7 +48,6 @@
 #'
 #' @export
 #' @import igraph stringr RUnit
-#' @importFrom nsga2R fastNonDominatedSorting
 #' @importFrom BiocParallel bplapply MulticoreParam
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
@@ -60,11 +59,11 @@
 #' @importFrom graphics boxplot plot legend
 #' @importFrom grDevices svg dev.off rainbow
 mogamun_init <- function(Generations = 500, PopSize = 100,
-    MinSize = 15, MaxSize = 50,
-    CrossoverRate = 0.8, MutationRate = 0.1, JaccardSimilarityThreshold = 30,
-    TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
-    MaxNumberOfAttempts = 3) {
-
+                         MinSize = 15, MaxSize = 50,
+                         CrossoverRate = 0.8, MutationRate = 0.1, JaccardSimilarityThreshold = 30,
+                         TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
+                         MaxNumberOfAttempts = 3) {
+    
     # determines the parameters that will be used for the evolution
     EvolutionParameters <- list(
         Generations = Generations, 
@@ -123,7 +122,7 @@ mogamun_init <- function(Generations = 500, PopSize = 100,
 #' @export
 
 mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath, 
-    NodesScoresPath, NetworkLayersDir, Layers) {
+                              NodesScoresPath, NetworkLayersDir, Layers) {
     Measure <- EvolutionParameters$Measure # "FDR" or "PValue"
     ThresholdDEG <- EvolutionParameters$ThresholdDEG # threshold for DEG
     DifferentialExpressionPath <- DifferentialExpressionPath # path for DE res
@@ -139,33 +138,38 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
     
     # read the file names of the networks for the current experiment
     Files <- list.files(NetworkLayersDir, pattern = 
-                paste0("^[", LayersToUse, "]_"), full.names = TRUE)
+                            paste0("^[", LayersToUse, "]_"), full.names = TRUE)
     
-    if ( ! file.exists(NodesScoresPath) ) { # if no nodes scores file exists
-        # calculate the nodes scores for all the genes in DE analysis results
-        NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(DE_results, 
-            as.character(DE_results$gene), Measure))
-        
-        # data frame of genes and scores. NOTE. Genes not in the list have 0
-        GenesWithNS <- data.frame("gene" = as.character(DE_results$gene), 
-            "nodescore" = NodesScores)
-        write.csv(GenesWithNS, file = NodesScoresPath, row.names = FALSE)
+    if (length(Files) < nchar(LayersToUse)) {
+        print(paste0("Error! One or more networks are missing from ", 
+                     NetworkLayersDir))
     } else {
-        GenesWithNS <- read.csv(NodesScoresPath, stringsAsFactors = FALSE)
+        if ( ! file.exists(NodesScoresPath) ) { # if no nodes scores file exists
+            # calculate the nodes scores for all the genes in DE analysis results
+            NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(DE_results, 
+                                                                  as.character(DE_results$gene), Measure))
+            
+            # data frame of genes and scores. NOTE. Genes not in the list have 0
+            GenesWithNS <- data.frame("gene" = as.character(DE_results$gene), 
+                                      "nodescore" = NodesScores)
+            write.csv(GenesWithNS, file = NodesScoresPath, row.names = FALSE)
+        } else {
+            GenesWithNS <- read.csv(NodesScoresPath, stringsAsFactors = FALSE)
+        }
+        
+        Multiplex <- GenerateMultiplexNetwork(Files) # make the multiplex network
+        Merged <- GenerateMergedNetwork(Files, Multiplex) # make the merged network 
+        DensityPerLayerMultiplex <- vapply(Multiplex, graph.density, numeric(1)) 
+        
+        LoadedData <- c(EvolutionParameters, list(
+            NetworkLayersDir = NetworkLayersDir, Layers = Layers, 
+            DE_results = DE_results, DEG = DEG, GenesWithNodesScores = GenesWithNS,
+            Multiplex = Multiplex, 
+            DensityPerLayerMultiplex = DensityPerLayerMultiplex,
+            Merged = Merged))
+        
+        return (LoadedData)
     }
-    
-    Multiplex <- GenerateMultiplexNetwork(Files) # make the multiplex network
-    Merged <- GenerateMergedNetwork(Files, Multiplex) # make the merged network 
-    DensityPerLayerMultiplex <- vapply(Multiplex, graph.density, numeric(1)) 
-    
-    LoadedData <- c(EvolutionParameters, list(
-        NetworkLayersDir = NetworkLayersDir, Layers = Layers, 
-        DE_results = DE_results, DEG = DEG, GenesWithNodesScores = GenesWithNS,
-        Multiplex = Multiplex, 
-        DensityPerLayerMultiplex = DensityPerLayerMultiplex,
-        Merged = Merged))
-    
-    return (LoadedData)
 }
 
 #' @title mogamun_run
@@ -206,12 +210,12 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
 #' )
 #' @export
 mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
-    ResultsDir = '.') {
+                        ResultsDir = '.') {
     if (exists("LoadedData")) {
         ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
         dir.create(ResultsPath, recursive = TRUE)  # create result folder 
         BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
-
+        
         BiocParallel::bplapply(
             seq_len(NumberOfRunsToExecute), MogamunBody, 
             LoadedData = LoadedData, BestIndsPath = BestIndsPath, 
@@ -280,9 +284,9 @@ mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 #'
 #' @export
 mogamun_postprocess <- function(ExperimentDir = '.', LoadedData = LoadedData,
-    JaccardSimilarityThreshold = 70, VisualizeInCytoscape = TRUE) {
+                                JaccardSimilarityThreshold = 70, VisualizeInCytoscape = TRUE) {
     
     PostprocessResults(ExperimentDir = ExperimentDir, LoadedData = LoadedData, 
-        JaccardSimilarityThreshold = JaccardSimilarityThreshold, 
-        VisualizeInCytoscape = VisualizeInCytoscape)
+                       JaccardSimilarityThreshold = JaccardSimilarityThreshold, 
+                       VisualizeInCytoscape = VisualizeInCytoscape)
 }

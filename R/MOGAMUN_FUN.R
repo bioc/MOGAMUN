@@ -42,7 +42,7 @@ GenerateMultiplexNetwork <- function(Files) {
         # NOTE. All the nodes will have the same ID in every layer
         CurrentNetwork <- 
             graph_from_data_frame(d = Layer, 
-                vertices = AllNodesToTake, directed = FALSE)
+                                  vertices = AllNodesToTake, directed = FALSE)
         
         # add subnetwork as a layer into the multiplex network
         Multiplex[[ length(Multiplex) + 1 ]] <- CurrentNetwork
@@ -65,7 +65,7 @@ GenerateMergedNetwork <- function(Files, Multiplex) {
     for (LayerFile in Files) {
         # load layer
         Layer <- data.frame(read.table(LayerFile, header = FALSE, 
-            stringsAsFactors = FALSE), Layer = LayerFile)
+                                       stringsAsFactors = FALSE), Layer = LayerFile)
         Merged <- rbind(Merged, Layer)
     }
     
@@ -362,7 +362,7 @@ EvaluateInd <- function (Individual, MultiplexNetwork, LoadedData) {
         
         # gets the sum of the nodes scores of the subnetwork
         SumNodesScores <- sum(GenesNS[GenesNS$gene %in% 
-            igraph::V(MultiplexNetwork[[1]])$name[Individual], "nodescore"])
+                                          igraph::V(MultiplexNetwork[[1]])$name[Individual], "nodescore"])
         
         AverageNodesScore <- SumNodesScores / length(Individual)
         
@@ -387,7 +387,7 @@ EvaluateInd <- function (Individual, MultiplexNetwork, LoadedData) {
         }
         
         Res <- data.frame(AverageNodesScore = AverageNodesScore, 
-            Density = SumDensityAllLayers)
+                          Density = SumDensityAllLayers)
     } else {
         Res <- data.frame(AverageNodesScore = 0, Density = 0)
     }
@@ -445,7 +445,7 @@ MakeNewPopulation <- function(LoadedData, Population) {
     NewPopulationForReplacement <- 
         Replacement(Parents = Population, Children = NewPopulation, 
                     LoadedData = LoadedData) # prepare new population
-
+    
     return(NewPopulationForReplacement) # return the new population 
 }
 
@@ -471,7 +471,7 @@ GetParent2 <- function(Parent1, Population, LoadedData) {
     # get inds that contain at least one node from the previous list
     NeighborsIndsP1 <- vapply( seq_len(PopSize), function(X) { 
         if (length(intersect(unlist(Population[X,"Individual"]), 
-            NeighborsNodesP1)) > 0){ X } else { 0 }}, numeric(1) )
+                             NeighborsNodesP1)) > 0){ X } else { 0 }}, numeric(1) )
     
     # filter population and leave individuals near parent 1
     PotentialIndsParent2 <- Population[NeighborsIndsP1, ]
@@ -514,8 +514,8 @@ TournamentSelection <- function (TournamentSize, TournPop) {
         if ("CrowdingDistance" %in% colnames(TournPop)) {
             # get id of the individual with the highest crowding distance
             winner <- which(TournPop$CrowdingDistance[ids] == 
-                max(TournPop$CrowdingDistance[ids])
-                )
+                                max(TournPop$CrowdingDistance[ids])
+            )
         } else {
             # if there is no crowding distance and the individuals have the 
             # same rank, they are all considered as winners
@@ -590,20 +590,20 @@ Crossover <- function (Parent1, Parent2, LoadedData) {
             for (k in seq_len(2)) { # loop to generate two children
                 # pick a size for the child 
                 Size <- ifelse(length(NodesP) >= MaxSize, 
-                    sample(MinSize:MaxSize, 1), 
-                    sample(MinSize:length(NodesP), 1))
+                               sample(MinSize:MaxSize, 1), 
+                               sample(MinSize:length(NodesP), 1))
                 # pick root
                 Root <- PickRoot(MyMx = Mx_Parents, LoadedData = LoadedData) 
                 SearchMethod <- sample(c("DFS", "BFS"), 1) # pick search method
                 
                 if (SearchMethod == "DFS") { # depth first search
                     DFS <- DFS_iterative_Mx(MyMx = Mx_Parents, Root = Root,
-                            SizeOfIndividual = Size, LoadedData = LoadedData)
+                                            SizeOfIndividual = Size, LoadedData = LoadedData)
                     
                     Children[k] <- list(DFS) # add child to the population
                 } else if (SearchMethod == "BFS") { # breadth first search
                     BFS <- BFS_iterative_Mx(MyMx = Mx_Parents, Root = Root, 
-                            SizeOfIndividual = Size, LoadedData = LoadedData )
+                                            SizeOfIndividual = Size, LoadedData = LoadedData )
                     
                     Children[k] <- list(BFS) # add child to the population
                 }
@@ -827,10 +827,10 @@ MutateNodes <- function(Ind, IndToMutNet, NodesToMutate, PotNodesToMutate,
         # obtain neighbors of nodes
         Neighbors_OrInd <- 
             names(unlist(lapply(names( igraph::V(IndToMutNet)),
-                    function(X) {igraph::neighbors(LoadedData$Merged, X)})))
+                                function(X) {igraph::neighbors(LoadedData$Merged, X)})))
         Neighbors_MutInd <- 
             names(unlist(lapply(names(igraph::V(MutatedNetwork)), 
-                function(X) {igraph::neighbors(LoadedData$Merged, X)})))
+                                function(X) {igraph::neighbors(LoadedData$Merged, X)})))
         
         # delete nodes that originally belonged to the individual
         Neighbors_OrInd <- 
@@ -874,7 +874,7 @@ AddNode <- function(Ind, IndToMutNet, LoadedData) {
     # obtain neighbors of nodes
     AvNeighbors <- 
         names(unlist(lapply(names(igraph::V(IndToMutNet)), 
-            function(X) {igraph::neighbors(LoadedData$Merged, X)})))
+                            function(X) {igraph::neighbors(LoadedData$Merged, X)})))
     
     # delete from the list all the nodes that originally belonged to the ind
     AvNeighbors <- AvNeighbors[!AvNeighbors %in% names(igraph::V(IndToMutNet))]
@@ -958,7 +958,7 @@ Replacement <- function (Parents, Children, LoadedData) {
     NewPopulationForReplacement <- 
         CombinedPopulation[CombinedPopulation$Rank < LastRank, ]
     NewPopulationForReplacement <- rbind(NewPopulationForReplacement, 
-        LastRankInds[seq_len(PopSize - nrow(NewPopulationForReplacement)), ])
+                                         LastRankInds[seq_len(PopSize - nrow(NewPopulationForReplacement)), ])
     
     return(NewPopulationForReplacement)
 }
@@ -991,24 +991,25 @@ ReplaceDuplicatedInds <- function(CombinedPopulation, LoadedData) {
             
             if (Sim$JS[i] < 100 & all(SortedPop$Rank[c(Ind1_ID, Ind2_ID)] == 1) 
                 & all(is.infinite(SortedPop$CrowdingDistance[
-                c(Ind1_ID, Ind2_ID)])) ) {
+                    c(Ind1_ID, Ind2_ID)])) ) {
                 print("Keeping similar individuals. Inf crowding distance.")
                 print(SortedPop[c(Ind1_ID, Ind2_ID), ])
             } else { # tournament between the two individuals
                 IndToKeep <- TournamentSelection(TournamentSize = 2,
-                    TournPop <- SortedPop[c(Ind1_ID, Ind2_ID), ])
+                                                 TournPop = SortedPop[c(Ind1_ID, Ind2_ID), ])
                 IndsToRemove <- c(IndsToRemove, ifelse(rownames(IndToKeep) == 
-                    row.names(SortedPop)[Ind1_ID], Ind2_ID, Ind1_ID)) 
+                                                           row.names(SortedPop)[Ind1_ID], Ind2_ID, Ind1_ID)) 
                 
                 # get and remove all future incidences of the ind
                 Ref <- which(Sim == IndsToRemove[length(IndsToRemove)], 
-                    arr.ind = TRUE)[, "row"]
+                             arr.ind = TRUE)[, "row"]
                 Sim <- Sim[!row.names(Sim) %in% row.names(Sim)[Ref[Ref > i]], ]
             }
             i <- i + 1
         }
         # remove the corresponding individuals
-        DivPop<-DivPop[!row.names(DivPop) %in% row.names(DivPop)[IndsToRemove],]
+        DivPop <- SortedPop[!row.names(SortedPop) %in% 
+                                row.names(SortedPop)[IndsToRemove], ]
     }
     # generate as many new individuals as duplicated ones
     NewInds <- GenerateInitialPop(
@@ -1016,7 +1017,7 @@ ReplaceDuplicatedInds <- function(CombinedPopulation, LoadedData) {
         Multiplex = Multiplex, LoadedData = LoadedData )
     FitnessData <- EvaluatePopulation(NewInds, Multiplex, LoadedData) # eval
     DivPop <- rbind(DivPop, data.frame("Individual" = I(NewInds), 
-        FitnessData, Rank = 0, CrowdingDistance = 0))
+                                       FitnessData, Rank = 0, CrowdingDistance = 0))
     DivPop <- NonDomSort(PopulationToSort = DivPop, LoadedData = LoadedData)
     return(DivPop)
 }
@@ -1044,6 +1045,57 @@ GetDuplicatedInds <- function(DivPop, Threshold) {
     return(Sim)
 }
 
+
+# definition of the function that performs the fast non dominated sorting 
+# NOTE. This function was taken from the nsga2R package, and adapted for 
+#       maximization problems
+# INPUTS:  inputData - Unsorted population
+# OUTPUT:  Sorted population with ranking 
+fastNonDominatedSorting <- function(inputData) {
+    popSize <- nrow(inputData)
+    idxDominators <- vector("list", popSize)
+    idxDominatees <- vector("list", popSize)
+    for (i in 1:(popSize - 1)) {
+        for (j in i:popSize) {
+            if (i != j) {
+                xi <- inputData[i, ]
+                xj <- inputData[j, ]
+                if (all(xi >= xj) && any(xi > xj)) {
+                    idxDominators[[j]] <- c(idxDominators[[j]], i)
+                    idxDominatees[[i]] <- c(idxDominatees[[i]], j)
+                }
+                else if (all(xj >= xi) && any(xj > xi)) {
+                    idxDominators[[i]] <- c(idxDominators[[i]], j)
+                    idxDominatees[[j]] <- c(idxDominatees[[j]], i)
+                }
+            }
+        }
+    }
+    noDominators <- lapply(idxDominators, length)
+    rnkList <- list()
+    rnkList <- c(rnkList, list(which(noDominators == 0)))
+    solAssigned <- c()
+    solAssigned <- c(solAssigned, length(which(noDominators == 0)))
+    while (sum(solAssigned) < popSize) {
+        Q <- c()
+        noSolInCurrFrnt <- solAssigned[length(solAssigned)]
+        for (i in 1:noSolInCurrFrnt) {
+            solIdx <- rnkList[[length(rnkList)]][i]
+            hisDominatees <- idxDominatees[[solIdx]]
+            for (i in hisDominatees) {
+                noDominators[[i]] <- noDominators[[i]] - 1
+                if (noDominators[[i]] == 0) {
+                    Q <- c(Q, i)
+                }
+            }
+        }
+        rnkList <- c(rnkList, list(sort(Q)))
+        solAssigned <- c(solAssigned, length(Q))
+    }
+    return(rnkList)
+}
+
+
 # definition of the function that performs the fast non dominated sorting and 
 # the calculus of the crowding distance
 # INPUTS:  PopulationToSort - Unsorted population
@@ -1053,14 +1105,14 @@ NonDomSort <- function(PopulationToSort, LoadedData) {
     ObjectiveNames <- LoadedData$ObjectiveNames
     
     # sort individuals by non domination
-    Ranking <- nsga2R::fastNonDominatedSorting(
+    Ranking <- fastNonDominatedSorting(
         PopulationToSort[, (colnames(PopulationToSort) %in% ObjectiveNames)] )
     
     # transform the output of the sorting into a matrix of 2 columns: 
     # 1.- Individual ID.  2.- Rank
     MyResult <- do.call(rbind, lapply(seq_len(length(Ranking)), function(i) {
         matrix(c(unlist(Ranking[i]), rep(i, length(unlist(Ranking[i])))), 
-            ncol = 2, byrow = FALSE) }))
+               ncol = 2, byrow = FALSE) }))
     
     # order the matrix by individual ID
     MyResult <- MyResult[order(MyResult[, 1]), ]
@@ -1070,16 +1122,16 @@ NonDomSort <- function(PopulationToSort, LoadedData) {
     
     # calculate (MAX - MIN) of every objective function
     Range <- vapply(PopulationToSort[, (colnames(PopulationToSort) %in% 
-        ObjectiveNames)], max, numeric(1)) - vapply(PopulationToSort[, 
-        (colnames(PopulationToSort) %in% ObjectiveNames)], min, numeric(1))
+                                            ObjectiveNames)], max, numeric(1)) - vapply(PopulationToSort[, 
+                                                                                                         (colnames(PopulationToSort) %in% ObjectiveNames)], min, numeric(1))
     
     # create a matrix removing the ind codes and the crowding distances
     PopulationMatrix <- as.matrix(PopulationToSort[ , 
-        !colnames(PopulationToSort) %in% c("Individual", "CrowdingDistance")])
+                                                    !colnames(PopulationToSort) %in% c("Individual", "CrowdingDistance")])
     
     PopulationToSort$CrowdingDistance <- 
         apply(crowdingDist4frnt(pop = PopulationMatrix, rnk = Ranking, 
-            rng = Range), 1, sum)
+                                rng = Range), 1, sum)
     
     return(PopulationToSort)
 }
@@ -1137,8 +1189,8 @@ SaveFinalPop <- function (BestIndividualsFile, Population, N, Network) {
         DecodedInd <- names(igraph::V(Network)[Ind])
         
         write(paste(c(DecodedInd, Population[i, c("AverageNodesScore", 
-            "Density", "Rank", "CrowdingDistance")]), collapse=" ", sep=""),
-            file = BestIndividualsFile, append = TRUE, sep = ",")
+                                                  "Density", "Rank", "CrowdingDistance")]), collapse=" ", sep=""),
+              file = BestIndividualsFile, append = TRUE, sep = ",")
     }
     
     return(TRUE)
@@ -1168,7 +1220,7 @@ SaveFinalPop <- function (BestIndividualsFile, Population, N, Network) {
 #                                is generated
 # OUTPUT: None
 PostprocessResults <- function(ExperimentDir, LoadedData, 
-                        JaccardSimilarityThreshold, VisualizeInCytoscape) {
+                               JaccardSimilarityThreshold, VisualizeInCytoscape) {
     Threshold <- JaccardSimilarityThreshold
     # get list of directories (each contains the results of a single exp)
     Dirs <- list.dirs(ExperimentDir, recursive = FALSE)
@@ -1185,8 +1237,8 @@ PostprocessResults <- function(ExperimentDir, LoadedData,
         for (r in seq_len(max(Population$Run))) {
             Nodes1stRank_AllRuns <- 
                 rbind(Nodes1stRank_AllRuns, data.frame(
-                Nodes = unique(unlist(Population[Population$Run == r & 
-                Population$Rank == 1, "Individual"])), Run = paste0("Run_", r)))
+                    Nodes = unique(unlist(Population[Population$Run == r & 
+                                                         Population$Rank == 1, "Individual"])), Run = paste0("Run_", r)))
         }
         
         # if there are results for several runs, make boxplot of similarities
@@ -1196,7 +1248,7 @@ PostprocessResults <- function(ExperimentDir, LoadedData,
         
         # calculate and plot the accumulated Pareto front 
         AccPF <- ObtainAccParetoFront(PathForPlots, Inds1stRank_AllRuns, 
-            Nodes1stRank_AllRuns, LoadedData) 
+                                      Nodes1stRank_AllRuns, LoadedData) 
         AccPF <- RemoveIdenticalInds(AccPF) # remove duplicated inds
         
         # filter networks to keep only interactions between genes in the AccPF
@@ -1226,8 +1278,8 @@ GetIndividualsAllRuns <- function(ExperimentsPath) {
     # initialize data empty data frame
     Population <- 
         data.frame(Run = double(), Individual = list(), 
-            AverageNodesScore = double(), Density = double(), 
-            Rank = numeric(), CrowdingDistance = double())
+                   AverageNodesScore = double(), Density = double(), 
+                   Rank = numeric(), CrowdingDistance = double())
     
     PatResFiles <- "MOGAMUN_Results__Run_[0-9]+.txt$"
     
@@ -1241,7 +1293,7 @@ GetIndividualsAllRuns <- function(ExperimentsPath) {
         MyContent <-readLines(con) 
         close(con)
         Run <- as.numeric(gsub("^.*_|\\..*$", "", ResFiles[counter], 
-            perl = TRUE))
+                               perl = TRUE))
         
         # loop through all the individuals
         for (i in seq_len(length(MyContent))) {
@@ -1251,12 +1303,12 @@ GetIndividualsAllRuns <- function(ExperimentsPath) {
             # average nodes score, density, rank and crowding distance
             MyInd <- 
                 data.frame(Run = Run, 
-                    Individual = I(list(sort(Ind[seq_len(length(Ind) - 4)]))), 
-                    AverageNodesScore = as.numeric(Ind[(length(Ind) - 3)]),
-                    Density = as.numeric(Ind[(length(Ind) - 2)]), 
-                    Rank = as.numeric(Ind[(length(Ind)-1)]),
-                    CrowdingDistance = as.numeric(Ind[length(Ind)])
-            )
+                           Individual = I(list(sort(Ind[seq_len(length(Ind) - 4)]))), 
+                           AverageNodesScore = as.numeric(Ind[(length(Ind) - 3)]),
+                           Density = as.numeric(Ind[(length(Ind) - 2)]), 
+                           Rank = as.numeric(Ind[(length(Ind)-1)]),
+                           CrowdingDistance = as.numeric(Ind[length(Ind)])
+                )
             
             # add individual to the population
             Population <- rbind(Population, MyInd)
@@ -1306,7 +1358,7 @@ SimilarityBetweenRunsBoxplot <- function(PathForPlots, Nodes1stRank_AllRuns) {
     # make a boxplot of similarities
     svg(paste0(PathForPlots, "A_Boxplot_similarities_between_runs.svg"))
     boxplot(AllJaccardSimilarities, 
-        main = "Pairwise Jaccard similarities of all the runs")
+            main = "Pairwise Jaccard similarities of all the runs")
     dev.off()
 }
 
@@ -1321,10 +1373,10 @@ SimilarityBetweenRunsBoxplot <- function(PathForPlots, Nodes1stRank_AllRuns) {
 #                      (see mogamun_load_data())    
 # OUTPUT: individuals in the accumulated Pareto front
 ObtainAccParetoFront <- function(PathForPlots, Inds1stRank_AllRuns, 
-    Nodes1stRank_AllRuns, LoadedData) {
+                                 Nodes1stRank_AllRuns, LoadedData) {
     # re-rank individuals in the first Pareto front
     AccPF <- NonDomSort(PopulationToSort = Inds1stRank_AllRuns,
-        LoadedData = LoadedData)
+                        LoadedData = LoadedData)
     
     Colors <- c("black", rainbow(length(unique(AccPF$Rank))-1))
     
@@ -1333,17 +1385,17 @@ ObtainAccParetoFront <- function(PathForPlots, Inds1stRank_AllRuns,
         
         svg(paste0(PathForPlots, "A_ScatterPlot_AccPF_ALL_INDS.svg"))
         plot(AccPF$AverageNodesScore, AccPF$Density, 
-            main = "Accumulated Pareto front: all individuals",
-            xlab = "Average nodes score", ylab = "Density", 
-            col = Colors[AccPF$Rank], pch = 16, cex = 2)
+             main = "Accumulated Pareto front: all individuals",
+             xlab = "Average nodes score", ylab = "Density", 
+             col = Colors[AccPF$Rank], pch = 16, cex = 2)
         dev.off()
         
         # make the legend of the previous plot as a separate file
         svg(paste0(PathForPlots, "A_ScatterPlot_AccPF_LEGEND_ALL_INDS.svg"))
         plot(NULL, xaxt = 'n', yaxt = 'n', bty = 'n', ylab = '', xlab = '', 
-            xlim = 0:1, ylim = 0:1)
+             xlim = 0:1, ylim = 0:1)
         legend("center", legend = paste("Pareto front ", 
-            seq_len(length(Colors))), col = Colors, pch = 16, cex = 1)
+                                        seq_len(length(Colors))), col = Colors, pch = 16, cex = 1)
         dev.off()
     }
     
@@ -1353,8 +1405,8 @@ ObtainAccParetoFront <- function(PathForPlots, Inds1stRank_AllRuns,
     
     svg(paste0(PathForPlots, "A_ScatterPlot_AccPF.svg"))
     plot(AccPF$AverageNodesScore, AccPF$Density, 
-        main = "Accumulated Pareto front", xlab = "Average nodes score", 
-        ylab = "Density", col = Colors[AccPF$Rank], pch = 16, cex = 2)
+         main = "Accumulated Pareto front", xlab = "Average nodes score", 
+         ylab = "Density", col = Colors[AccPF$Rank], pch = 16, cex = 2)
     dev.off()
     
     return(AccPF)
@@ -1389,10 +1441,10 @@ RemoveIdenticalInds <- function(AccPF) {
             IndsToRemove <- c(IndsToRemove, Similarities[s, 2])
             Ref <- 
                 which(Similarities == Similarities[s, 2], 
-                    arr.ind = TRUE)[, "row"]
+                      arr.ind = TRUE)[, "row"]
             Ref <- Ref[Ref > s]
             Similarities <- Similarities[!row.names(Similarities) %in% 
-                row.names(Similarities)[Ref], ]
+                                             row.names(Similarities)[Ref], ]
         }
         s <- s + 1
     }
@@ -1416,7 +1468,7 @@ RemoveIdenticalInds <- function(AccPF) {
 FilterNetworks <- function(ExperimentsPath, LoadedData, AccPF) {
     # read the file names of the networks for the current experiment
     myLayers <- list.files(LoadedData$NetworkLayersDir, 
-        pattern = paste0("^[", LoadedData$Layers, "]_"))
+                           pattern = paste0("^[", LoadedData$Layers, "]_"))
     
     # get the list of genes in the accumulated Pareto front
     genes <- as.character(unique(unlist(AccPF$Individual)))
@@ -1425,7 +1477,7 @@ FilterNetworks <- function(ExperimentsPath, LoadedData, AccPF) {
     for (j in seq_len(length(myLayers))) {
         # read network
         FullNetwork <- read.table(paste0(LoadedData$NetworkLayersDir, 
-            myLayers[j]), sep = "\t")
+                                         myLayers[j]), sep = "\t")
         keep <- NULL # initialize null object
         
         # get all rows in the PPI network that contain these genes
@@ -1438,20 +1490,20 @@ FilterNetworks <- function(ExperimentsPath, LoadedData, AccPF) {
         
         # save filtered network in a file
         write.table(MyFilteredNetwork, file = paste0(ExperimentsPath, 
-            substr(myLayers[j], 1, nchar(myLayers[j]) - 3), "_FILTERED.csv"), 
-            row.names = FALSE, quote = FALSE)
+                                                     substr(myLayers[j], 1, nchar(myLayers[j]) - 3), "_FILTERED.csv"), 
+                    row.names = FALSE, quote = FALSE)
     }
     
     # get files that contain the filtered networks 
     myDataFiles <- list.files(ExperimentsPath, pattern = '_FILTERED.csv')
-
+    
     myFullListOfInteractions <- NULL # initialize interactions' list 
     
     # loop through all the files
     for (i in seq_len(length(myDataFiles))) {
         # get data
         data <- read.table(paste0(ExperimentsPath, myDataFiles[i]), 
-            header = TRUE)
+                           header = TRUE)
         
         # add it to the list
         myFullListOfInteractions <- rbind(myFullListOfInteractions, data)
@@ -1459,8 +1511,8 @@ FilterNetworks <- function(ExperimentsPath, LoadedData, AccPF) {
     
     # save the full list of filtered interactions
     write.table(myFullListOfInteractions, file = paste0(ExperimentsPath, 
-        "A_ALL_FILTERED_INTERACTIONS_CYTOSCAPE.csv"), 
-        row.names= FALSE, quote = FALSE )
+                                                        "A_ALL_FILTERED_INTERACTIONS_CYTOSCAPE.csv"), 
+                row.names= FALSE, quote = FALSE )
 }
 
 
@@ -1521,7 +1573,7 @@ JoinSimilarInds <- function(AccPF, LoadedData, Threshold) {
                     ID1 <- Sim[i, 1]
                     ID2 <- Sim[i, 2]
                     IndsUnion <- union(DiversePop$Individual[[ID1]], 
-                        DiversePop$Individual[[ID2]])
+                                       DiversePop$Individual[[ID2]])
                     
                     # verify that union of individuals respects the max size
                     if (length(IndsUnion) <= MaxSize) {
@@ -1531,7 +1583,7 @@ JoinSimilarInds <- function(AccPF, LoadedData, Threshold) {
                         # get all future incidences to joined individuals 
                         Ref <- 
                             union(which(Sim == ID1, arr.ind = TRUE)[, "row"], 
-                                which(Sim == ID2, arr.ind = TRUE)[, "row"])
+                                  which(Sim == ID2, arr.ind = TRUE)[, "row"])
                         
                         # check and remove future incidences to joined inds
                         Ref <- Ref[Ref > i]
@@ -1544,7 +1596,7 @@ JoinSimilarInds <- function(AccPF, LoadedData, Threshold) {
                 } else {
                     # remove the individuals that were joined with another one
                     DiversePop <- DiversePop[!row.names(DiversePop) %in% 
-                        row.names(DiversePop)[IndsToRemove], ]
+                                                 row.names(DiversePop)[IndsToRemove], ]
                 }
             } else { KeepGoing <- FALSE }
         } else { KeepGoing <- FALSE }
@@ -1564,7 +1616,7 @@ SaveFilteredAccPF <- function(DiversePopulation, ExperimentsPath, Threshold) {
     for (i in seq_len(nrow(DiversePopulation))) { 
         Ind <- unlist(DiversePopulation$Individual[i]) # get the inds code
         write(paste(Ind, collapse=" ", sep=""), file = paste0(ExperimentsPath, 
-            "A_AccPF_JacSimT_", Threshold, ".csv"), append = TRUE, sep = ",") 
+                                                              "A_AccPF_JacSimT_", Threshold, ".csv"), append = TRUE, sep = ",") 
     }
     
     # create data frame with all the nodes in the accumulated Pareto front
@@ -1578,7 +1630,7 @@ SaveFilteredAccPF <- function(DiversePopulation, ExperimentsPath, Threshold) {
         
         AllNodesDF_Acc[, (ncol(AllNodesDF_Acc)+1)] <- 
             ifelse(AllNodesDF_Acc[,1] %in% NodesCurrentInd, 
-                paste0("Ind", i), "")
+                   paste0("Ind", i), "")
         
         colnames(AllNodesDF_Acc)[ncol(AllNodesDF_Acc)] <- paste0("Ind", i)
     }
@@ -1586,7 +1638,7 @@ SaveFilteredAccPF <- function(DiversePopulation, ExperimentsPath, Threshold) {
     AllNodesDF_Acc$Any <- "YES"
     
     write.csv(AllNodesDF_Acc, paste0(ExperimentsPath, 
-        "A_AccPF_CYTOSCAPE_JacSimT_", Threshold, ".csv"), row.names = FALSE)
+                                     "A_AccPF_CYTOSCAPE_JacSimT_", Threshold, ".csv"), row.names = FALSE)
 }
 
 
@@ -1612,8 +1664,8 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         
         # read network
         Network <- read.csv( paste0(ExpPath, 
-            "A_ALL_FILTERED_INTERACTIONS_CYTOSCAPE.csv"), sep = " ",
-            stringsAsFactors = FALSE )
+                                    "A_ALL_FILTERED_INTERACTIONS_CYTOSCAPE.csv"), sep = " ",
+                             stringsAsFactors = FALSE )
         
         # change column names to match the requirements for Cytoscape
         colnames(Network) <- c("source", "target", "interaction")
@@ -1628,14 +1680,14 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         DE <- LoadedData$DE_results
         if ("logFC" %in% colnames(DE)) { 
             DE$DEG <- ifelse(abs(DE$logFC) > 1 & 
-                DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
+                                 DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
         } else {DE$DEG <- ifelse(DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE)}
-
+        
         DE <- DE[!is.na(DE$gene), ] # remove rows with no gene name
         
         # load expression data in cytoscape
         loadTableData(data = DE, data.key.column = "gene", table = "node",
-            table.key.column = "name", namespace = "default", network = d)
+                      table.key.column = "name", namespace = "default", network = d)
         
         FormatNodesAndEdges(Network, d, LoadedData, DE) # add colors and borders
         
@@ -1645,7 +1697,7 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         # verify if there are more exp to analyze to leave last one open
         if (which(Dirs == d) < length(Dirs)) {
             closeSession(save.before.closing = TRUE, 
-                filename = paste0(ExpPath, "A_Acc_PF_", d))
+                         filename = paste0(ExpPath, "A_Acc_PF_", d))
         } else { saveSession(filename = paste0(ExpPath, "A_Acc_PF_", d)) }
     }
 }
@@ -1676,25 +1728,25 @@ FormatNodesAndEdges <- function(Network, d, LoadedData, DE) {
     
     # define edges color (it is adapted to any number of layers)
     setEdgeColorMapping(table.column = "interaction", mapping.type = "d",
-        table.column.values = unique(Network$interaction), colors = edgesColors)
+                        table.column.values = unique(Network$interaction), colors = edgesColors)
     
     if ("logFC" %in% colnames(DE)) {
         # set nodes' colors according to the logFC, from green (downregulated) 
         # to white and then to red (upregulated)
         setNodeColorMapping(
             table.column = "logFC", table.column.values = c(min(DE$logFC), 
-            0.0, max(DE$logFC)), colors = c("#009933", "#FFFFFF", "#FF0000"), 
+                                                            0.0, max(DE$logFC)), colors = c("#009933", "#FFFFFF", "#FF0000"), 
             mapping.type = "c", style.name = "default", network = d)        
     }
-
+    
     setNodeBorderColorMapping(table.column = "name", colors = "#000000",
-        mapping.type = "d", style.name = "default", default.color = "#000000",
-        network = d)
+                              mapping.type = "d", style.name = "default", default.color = "#000000",
+                              network = d)
     
     # set width of border to highlight DEG
     setNodeBorderWidthMapping(table.column = "DEG",
-        table.column.values = c(TRUE, FALSE), widths = c(5, 0), 
-        mapping.type = "d", style.name = "default", network = d)
+                              table.column.values = c(TRUE, FALSE), widths = c(5, 0), 
+                              mapping.type = "d", style.name = "default", network = d)
     
 }
 
@@ -1715,26 +1767,26 @@ CreateActiveModules <- function(d, ExperimentsPath) {
     # load data for active modules
     ActiveModules <- 
         read.csv(paste0(ExperimentsPath, list.files(ExperimentsPath,
-            pattern = "A_AccPF_CYTOSCAPE_JacSimT_")))
+                                                    pattern = "A_AccPF_CYTOSCAPE_JacSimT_")))
     
     # load active modules data in cytoscape
     loadTableData(data = ActiveModules, data.key.column = "Nodes_Names",
-        table = "node", table.key.column = "name", namespace = "default", 
-        network = d)
+                  table = "node", table.key.column = "name", namespace = "default", 
+                  network = d)
     
     # create a subnetwork for each active module
     lapply( 
         colnames(ActiveModules)[grep("Ind", colnames(ActiveModules))], 
         function(am){ 
             createColumnFilter(filter.name = "ActiveModules",  column = am,  
-                criterion = am, predicate = "IS", type = "node", network = d)
-                                
+                               criterion = am, predicate = "IS", type = "node", network = d)
+            
             # create the subnetwork with the selected nodes
             createSubnetwork(subnetwork.name = paste0("ActiveModule_", am))
             
             # set layout 
             layoutNetwork(layout.name = "force-directed", 
-                network = paste0("ActiveModule_", am))
+                          network = paste0("ActiveModule_", am))
         } 
     )
 }
@@ -1742,6 +1794,7 @@ CreateActiveModules <- function(d, ExperimentsPath) {
 
 # defines the function of the body of MOGAMUN 
 MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
+    sink(NULL, type = "output")
     BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
     MyInitPop <- GenerateInitialPop(
         LoadedData$PopSize, LoadedData$Multiplex, LoadedData) 
@@ -1772,7 +1825,7 @@ MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
     write.csv(
         StatsGen, 
         file = paste0(BestIndsPath,"StatisticsPerGeneration_Run", RunNumber, 
-                ".csv"), 
+                      ".csv"), 
         row.names = FALSE
     )
     SaveFinalPop(
@@ -1781,6 +1834,3 @@ MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
     print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
     gc()
 }
-
-
-
