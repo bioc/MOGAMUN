@@ -843,8 +843,8 @@ MutateNodes <- function(Ind, IndToMutNet, NodesToMutate, PotNodesToMutate,
             Neighbors_MutInd[
                 !Neighbors_MutInd %in% names(igraph::V(IndToMutNet))]
         
-        # check if network is connected
-        if( igraph::is.connected(MutatedNetwork) ) { 
+        # check if network is connected and there are available neighbors to add
+        if(igraph::is.connected(MutatedNetwork) & length(Neighbors_MutInd) > 0){ 
             # save changes 
             Ind <- GetIDOfNodes(names(igraph::V(MutatedNetwork)), 
                                 LoadedData$Multiplex[[1]])
@@ -853,13 +853,16 @@ MutateNodes <- function(Ind, IndToMutNet, NodesToMutate, PotNodesToMutate,
         } else { AvNeighbors <- Neighbors_OrInd }
         
         # if there is at least 1 available neighbor to be added 
-        if(length(AvNeighbors) > 0) {
+        if(length(AvNeighbors) > 0 & length(Ind) < LoadedData$MaxSize) {
             # pick a node to add
             NewNodeID <- GetNodeToAdd(AvNeighbors, LoadedData) 
             
-            # add node
+            # add node to list and to network
             Ind <- c(Ind, NewNodeID) 
-        } else { print("Attempt to add a new neighbor FAILED") }
+            IndToMutNet <- igraph::induced_subgraph(LoadedData$Merged, Ind)
+        } else { 
+            print("Attempt to add a new neighbor FAILED. Rolling back mutation")
+        }
     }
     return(Ind)
 }
